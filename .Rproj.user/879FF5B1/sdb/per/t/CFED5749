@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1493210395587.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "CFED5749",
+    "lastKnownWriteTime" : 3419473789575321445,
+    "last_content_update" : 1493210395587,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "A0E671D9",
+        "caption" : "ratingMatrix",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=ratingMatrix&cache_key=A0E671D9",
+        "displayedObservations" : 943,
+        "environment" : "",
+        "object" : "ratingMatrix",
+        "preview" : 0,
+        "totalObservations" : 943,
+        "variables" : 1682
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

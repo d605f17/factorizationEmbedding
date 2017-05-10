@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1493208933263.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "F6D8912D",
+    "lastKnownWriteTime" : 1493213733,
+    "last_content_update" : 1493213733849,
+    "path" : "C:/Development/P6/factorizationEmbedding/main.r",
+    "project_path" : "main.r",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

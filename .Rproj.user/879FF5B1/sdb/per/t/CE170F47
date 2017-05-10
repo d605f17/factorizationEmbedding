@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "source('matrixFactorization.r')\n\ncreateHashIJ <- function(ratingMatrix){\n  nrItems <- ncol(ratingMatrix)\n  hashIJ <- matrix(nrow=nrItems, ncol=nrItems)\n  \n  for(itemOne in 1:nrItems){\n    print(itemOne)\n    for(itemTwo in itemOne:nrItems){\n      itemsRated <- which(ratingMatrix[, itemOne] > 3 & ratingMatrix[, itemTwo] > 3)\n      hashIJ[itemOne, itemTwo] <- length(itemsRated)\n    }\n  }\n  \n  return(hashIJ)\n}\n\n\ncalculateD <- function(hashIJ){\n  nrItems <- ncol(hashIJ)\n  D <- 0\n  \n  for(itemPair in 1:nrItems){\n    D <- D + length(which(!is.na(hashIJ[itemPair,]) & hashIJ[itemPair,] != 0))\n  }\n  \n  return(D-nrItems)\n}\n\nPMI <- function(hashIJ, D, i, j){\n  if(i < j){\n    top <- hashIJ[i, j]*D\n    bottom <- hashIJ[i, i]*hashIJ[j, j]\n  }\n  else{\n    top <- hashIJ[j, i]*D\n    bottom <- hashIJ[i, i]*hashIJ[j, j]\n  }\n  \n  return(log(top/bottom))\n}\n\ncreateSPPMI <- function(hashIJ, D){\n  nrItems <- 1682\n  SPPMI = matrix(nrow=nrItems, ncol=nrItems)\n  k = 10\n  \n  for(i in 1:nrItems){\n    for(j in 1:nrItems){\n      SPPMI[i, j] <- max(PMI(hashIJ, D, i, j) - log(k), 0)\n    }\n  }\n  \n  write.table(SPPMI, file = paste(\"SPPMI.csv\", sep = \"\"), sep = \",\", row.names = F, col.names = F) #virker ikke ordenligt\n}\n\nexecuteSPPMI <- function(fileName){\n  hashIJ <- createHashIJ(makeRatingsMatrix(fileName, 943, 1682))\n  D <- calculateD(hashIJ)\n  createSPPMI(hashIJ, D)\n}\n\ngetSPPMI <- function(fileName){\n  SPPMI <- read.csv(paste(getwd(), \"/\", fileName, sep = \"\"), header=FALSE, sep = \",\")\n  return(as.matrix(SPPMI))\n}\n\n",
+    "created" : 1493298168419.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1996589812",
+    "id" : "CE170F47",
+    "lastKnownWriteTime" : 1494341590,
+    "last_content_update" : 1494341590132,
+    "path" : "C:/Development/P6/factorizationEmbedding/SPPMI.r",
+    "project_path" : "SPPMI.r",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
