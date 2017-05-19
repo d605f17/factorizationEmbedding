@@ -1,0 +1,5 @@
+k i SPPMI styrer hvor meget item embedding har at sige. Jo større k jo flere 0-indgange <- m_ij bli'r 0.
+
+Evt. lav SPPMI med flere k og regn sparsity ud
+Lambda ikke korrekt
+Der er lavet et if check, som sikrer kørsel, selvom der eksiterer items uden kontekst eller ligende. F.eks. hvis et item ikke har en kontekst, så bliver det ikke medregnet, dette kan være forkert(give forkerte resultater)

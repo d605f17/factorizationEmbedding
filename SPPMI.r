@@ -6,9 +6,13 @@ createHashIJ <- function(ratingMatrix){
   
   for(itemOne in 1:nrItems){
     print(itemOne)
-    for(itemTwo in itemOne:nrItems){
-      itemsRated <- which(ratingMatrix[, itemOne] > 3 & ratingMatrix[, itemTwo] > 3)
-      hashIJ[itemOne, itemTwo] <- length(itemsRated)
+    for(itemTwo in 1:nrItems){
+      if(itemOne > itemTwo)
+        hashIJ[itemOne, itemTwo] <- hashIJ[itemTwo, itemOne] 
+      else {
+        itemsRated <- which(ratingMatrix[, itemOne] > 3 & ratingMatrix[, itemTwo] > 3)
+        hashIJ[itemOne, itemTwo] <- length(itemsRated)
+      }
     }
   }
   
@@ -21,21 +25,20 @@ calculateD <- function(hashIJ){
   D <- 0
   
   for(itemPair in 1:nrItems){
-    D <- D + length(which(!is.na(hashIJ[itemPair,]) & hashIJ[itemPair,] != 0))
+    D <- D + sum(hashIJ[itemPair, itemPair:nrItems])
   }
   
-  return(D-nrItems)
+  return(D)
 }
 
 PMI <- function(hashIJ, D, i, j){
-  if(i < j){
-    top <- hashIJ[i, j]*D
-    bottom <- hashIJ[i, i]*hashIJ[j, j]
-  }
-  else{
-    top <- hashIJ[j, i]*D
-    bottom <- hashIJ[i, i]*hashIJ[j, j]
-  }
+  hashI <- sum(hashIJ[i, ])
+  hashJ <- sum(hashIJ[, j])
+  top <- hashIJ[i, j]*D
+  bottom <- hashI * hashJ
+  
+  if(bottom == 0)
+    return(0)
   
   return(log(top/bottom))
 }
@@ -43,15 +46,17 @@ PMI <- function(hashIJ, D, i, j){
 createSPPMI <- function(hashIJ, D){
   nrItems <- 1682
   SPPMI = matrix(nrow=nrItems, ncol=nrItems)
-  k = 10
+  k = 1
   
   for(i in 1:nrItems){
+    print(Sys.time())
+    print(i)
     for(j in 1:nrItems){
       SPPMI[i, j] <- max(PMI(hashIJ, D, i, j) - log(k), 0)
     }
   }
   
-  write.table(SPPMI, file = paste("SPPMI.csv", sep = ""), sep = ",", row.names = F, col.names = F) #virker ikke ordenligt
+  write.table(SPPMI, file = paste("SPPMIk_1.csv", sep = ""), sep = ",", row.names = F, col.names = F)
 }
 
 executeSPPMI <- function(fileName){
