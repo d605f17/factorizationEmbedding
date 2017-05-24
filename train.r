@@ -168,13 +168,14 @@ calculateNDCG <- function(userId, predictions, M, testData, ratingMatrix){
   DCG <- 0
   IDCG <- 0
   knownItems <- as.matrix(testData[which(testData[, 1] == userId), 2])
-  
+
   for(item in pi){
     if(item %in% knownItems){
       consideredItems <- consideredItems + 1
       consumed <- 0
       rating <- testData[which(testData[, 1] == userId & testData[, 2] == item), 3]
-        if(rating >= 4){
+      predictedRating <- predictions[userId, item]
+        if(rating >= 4 & predictedRating >= 4){
           consumed <- 1
         }
       DCG <- DCG + ((2^consumed) - 1)/(log(item + 1))
@@ -186,6 +187,7 @@ calculateNDCG <- function(userId, predictions, M, testData, ratingMatrix){
   
   consideredItems <- 0
   for(item in rel){
+    if(item %in% knownItems){
     consideredItems <- consideredItems + 1
     rating <- testData[which(testData[, 1] == userId & testData[, 2] == item), 3]
     consumed <- 0
@@ -197,7 +199,7 @@ calculateNDCG <- function(userId, predictions, M, testData, ratingMatrix){
       break
     }
   }
-  
+}
   if(is.na(DCG/IDCG)){
     return(0)
   }
@@ -215,48 +217,57 @@ train <- function(filename){
   wi <- matrix(0, nrow = numberOfItems, ncol = 1)
   cj <- matrix(0, nrow = numberOfItems, ncol = 1)
   yi <- 0
-  l <- 1
+  l <- 0.03
   alpha <- 40
   lambda <- l * 0.5
-  totalNDDCG <- 0
+  totalNDCG <- 0
+  stopCon <- 0
   
-  trainData <- read_delim(paste(getwd(), "/ml-100k/", filename, ".base", sep = ""),
-                          "\t", escape_double = FALSE, trim_ws = TRUE, 
-                          col_names = c("userId", "movieId", "rating", "timestamp"),
-                          col_types = cols(
-                            userId = col_integer(),
-                            movieId = col_integer(),
-                            rating = col_integer(),
-                            timestamp = col_integer()
-                          )
-  );
+  testData <- makeTestdata(filename)
+
+  ratingMatrix <- makeRatingsMatrix(filename, numberOfUsers, numberOfItems)
   trainData <<- as.matrix(trainData)
   SPPMI <- as.matrix(getSPPMI("SPPMI_k1.csv"))
   
   print('Training started')
   startTime <- Sys.time()
-  for(step in 1:3){
+  for(step in 1:20){
+    cat("iteration:", step, "\n")
     Lco <- 0
     
     for(user in 1:numberOfUsers){
       theta[user, ] <- solveTheta(theta, user, beta, K, alpha, lambda, ratingMatrix, l)
     }
     
-    print("SKIFT!")
+    print("Theta updated")
     for(item in 1:numberOfItems){
       beta[item, ] <- solveBeta(theta, item, gamma, K, alpha, SPPMI, lambda, ratingMatrix, wi, cj, l)
       gamma[item, ] <- solveGamma(item, beta, K, SPPMI, wi, cj, lambda)
       wi[item, ] <- solveWi(beta, item, gamma, SPPMI, cj)
       cj[item, ] <- solveCj(beta, item, gamma, SPPMI, wi)
     }
+    print("Beta, gamma, wi, cj updated")
     predictions <- theta %*% t(beta)
 
     for(user in 1:numberOfUsers){
-      totalNDDCG <- totalNDDCG + calculateNDCG(user, predictions, 10, trainData, ratingMatrix)
+      totalNDCG <- totalNDCG + calculateNDCG(user, predictions, 10, testData, ratingMatrix)
     }
-    print(totalNDDCG/numberOfUsers)
-    totalNDDCG <- 0
+    NDCGk <- totalNDCG/numberOfUsers
+    cat("NDCG:", NDCGk, "\n")
+    cat("RMSE:", RMSE(predictions, testData), "\n")
+    cat("MAE:", MAE(predictions, testData), "\n")
+    cat("Precision:", precision(predictions, testData, 4), "\n")
+    cat("Recall:", recall(predictions, testData, 4), "\n")
+    cat("Fmeasure:", fmeasure(precision(predictions, testData, 4), recall(predictions, testData, 4)), "\n")
+    if(NDCGk < stopCon){
+      break
+    }
+    stopCon <- NDCGk
+    totalNDCG <- 0
+    NDCGk <- 0
+
   }
+  
   print(startTime)
   print(Sys.time())
 }
