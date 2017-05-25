@@ -22,3 +22,4 @@ makeRatingsMatrix <- function(filename, numberOfUsers, numberOfItems) {
 }
 
 ratingMatrix<-makeRatingsMatrix('ua', 943, 1682)
+
