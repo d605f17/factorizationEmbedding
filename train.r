@@ -1,6 +1,21 @@
 source('SPPMI.r')
 source('matrixFactorization.r')
 
+makeTestData <- function(filename) {
+  testData <- read_delim(paste(getwd(), "/ml-100k/", filename, ".test", sep = ""), 
+                         "\t", escape_double = FALSE, trim_ws = TRUE,
+                         col_names = c("userId", "movieId", "rating", "timestamp"),
+                         col_types = cols(
+                           userId = col_integer(),
+                           movieId = col_integer(),
+                           rating = col_integer(),
+                           timestamp = col_integer()
+                         )
+  )
+  
+  return(as.matrix(testData))
+}
+
 solveTheta <- function(theta, userId, beta, K, alpha, lambda, ratingMatrix, l){
   firstSum <- matrix(0, nrow = K, ncol = K)
   secondSum <- matrix(0, nrow = K, ncol = 1)
@@ -212,7 +227,7 @@ calculateNDCG <- function(predictions, M, testData, ratingMatrix){
 }
 
 
-train <- function(filename){
+train <- function(filename, l){
   numberOfItems <- 1682
   numberOfUsers <- 943
   K <- 100
@@ -222,13 +237,12 @@ train <- function(filename){
   wi <- matrix(0, nrow = numberOfItems, ncol = 1)
   cj <- matrix(0, nrow = numberOfItems, ncol = 1)
   yi <- 0
-  l <- 0.03
   alpha <- 40
   lambda <- l * 0.5
   totalNDCG <- 0
   stopCon <- 0
   
-  testData <- makeTestdata(filename)
+  testData <- makeTestData(filename)
 
   ratingMatrix <- makeRatingsMatrix(filename, numberOfUsers, numberOfItems)
   trainData <- read_delim(paste(getwd(), "/ml-100k/", filename, ".base", sep = ""),
@@ -279,11 +293,17 @@ train <- function(filename){
     NDCGk <- 0
 
   }
-  
   print(startTime)
   print(Sys.time())
+  return(NDCGK)
 }
-predictions <- train("ua")
+
+lList <- c(0.01, 0.05, 0.1, 0.5, 1, 5,10)
+for (l in lList){
+  NDCGK <- train("ua", l)
+  write(paste(NDCGK, l, sep = "-"), file = "bestl.txt", append = T)
+}
+
 
 
 
